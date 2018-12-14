@@ -81,10 +81,5 @@ class CinderDriver(BaseDriver):
     def get(self, volume_id):
         return self.client.volumes.get(volume_id)
 
-    def attach(self, volume, instance_uuid=None):
-        mountpoint = '/dev/vda'
-        mode = 'rw'
-        return self.client.volumes.attach(volume, instance_uuid, mountpoint, mode)
-
     def set_bootable(self, volume, flag):
         return self.client.volumes.set_bootable(self, volume, flag)

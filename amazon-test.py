@@ -87,12 +87,16 @@ class AmazonTest():
         self.amazon_driver.delete(id)
         time.sleep(10)
 
-    def create_volume(self):
-        configs = {
-            'size': 15,
-            'name': 'Amazon-Cal-Vol-Test',
-            'snapshot_id': 'snap-e6bfaec3'
-        }
+    def create_volume(self, size):
+        configs = {}
+        size = int(size)
+        if size > 40:
+            configs['snapshot_id'] = 'snap-9cb03216'
+        elif size > 20:
+            configs['snapshot_id'] = 'snap-fb042984'
+        else:
+            configs['snapshot_id'] = 'snap-e6bfaec3'
+
         return self.amazon_volume_driver.create(configs)
 
     def create_snapshot(self):
@@ -143,46 +147,62 @@ def run():
     amazon_test = AmazonTest()
     if args.FLAVOR == 'small':
         print 'small type vm'
-        amazon_test.create_vm_small_flavor()
+        vm = amazon_test.create_vm_small_flavor()
+        f = open('saved_vm_amazon.txt', 'w+')
+        f.write(str(vm.id))  # write to file
     elif args.FLAVOR == 'medium':
         print 'medium type vm'
-        amazon_test.create_vm_medium_flavor()
+        vm = amazon_test.create_vm_medium_flavor()
+        f = open('saved_vm_amazon.txt', 'w+')
+        f.write(str(vm.id))  # write to file
     elif args.FLAVOR == 'large':
         print 'large type vm'
-        amazon_test.create_vm_large_flavor()
+        vm = amazon_test.create_vm_large_flavor()
+        f = open('saved_vm_amazon.txt', 'w+')
+        f.write(str(vm.id))  # write to file
 
     if args.VOLUME == 'true':
         started_time = int(round(time.time() * 1000))
-        print 'create volume'
-        # volume = amazon_test.create_volume()
 
-        print 'create instance'
-        block_device_mapping = [
-            {
-                'DeviceName': '/dev/vdb',
-                'VirtualName': 'ephemeral0',
-                'Ebs': {
-                    'DeleteOnTermination': False,
-                    'SnapshotId': 'snap-e6bfaec3',
-                    'VolumeSize': int(args.SIZE),
-                    'VolumeType': '',
-                    'Encrypted': False,
-                    'KmsKeyId': ''
-                },
-                'NoDevice': ''
-            },
-        ]
-        vm = amazon_test.create_vm_small_flavor(block_device_mapping)
+        print 'create volume'
+        volume = amazon_test.create_volume(args.SIZE)
+
+        print 'attach instance'
+        f = open("saved_vm_amazon.txt", "rw+")
+        vm_id = f.readline()
+        configs = {
+            'device': '/dev/vdb',
+            'volume_id': volume.id,
+            'instance_id': vm_id
+        }
+        time.sleep(5)
+        passCreated = False
+        while passCreated == False:
+            try:
+                print 'before Attached'
+                amazon_test.amazon_volume_driver.attach_volume(configs)
+                print 'Attached'
+                passCreated = True
+            except:
+                print 'Volume has been not bootable.'
+                time.sleep(5)
 
         ended_time = int(round(time.time() * 1000))
-        print 'CREATE VOLUME WITH SIZE ' + args.SIZE + 'GB IN (ms): ', ended_time - started_time
+        print 'CREATE VOLUME WITH SIZE ' + args.SIZE + 'GB THEN ATTACH IN (ms): ', ended_time - started_time
 
-        f = open('amazon_saved_vm.txt', 'w+')
-        f.write(str(vm.id))  # write to file
+        # time.sleep(5)
+        # passRemoved = False
+        # while passRemoved == False:
+        #     try:
+        #         amazon_test.amazon_volume_driver.detach_volume(configs)
+        #         passRemoved = True
+        #     except:
+        #         print 'Volume has been not removed.'
+        #         time.sleep(5)
 
     if args.ASSIGN != 'false':
         print 'Associate Floating IP'
-        f = open("amazon_saved_vm.txt", "rw+")
+        f = open("saved_vm_amazon.txt", "rw+")
         vm_id = f.readline()
         print vm_id
         search_opts = {

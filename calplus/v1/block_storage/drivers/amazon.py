@@ -56,7 +56,7 @@ class AmazonVolumeDriver(BaseDriver):
         # }]
 
         volume = self.resource.create_volume(
-            AvailabilityZones=avail_zone,
+            AvailabilityZone=avail_zone,
             SnapshotId=snapshot_id,
         )
         return volume
@@ -79,3 +79,24 @@ class AmazonVolumeDriver(BaseDriver):
         )
         return snapshot
 
+    def attach_volume(self, configs):
+        volume_id = configs['volume_id']
+        instance_id = configs['instance_id']
+        device = configs['device']
+        response = self.client.attach_volume(
+            Device=device,
+            InstanceId=instance_id,
+            VolumeId=volume_id,
+        )
+        return response
+
+    def detach_volume(self, configs):
+        volume_id = configs['volume_id']
+        instance_id = configs['instance_id']
+        device = configs['device']
+        response = self.client.detach_volume(
+            Device=device,
+            InstanceId=instance_id,
+            VolumeId=volume_id,
+        )
+        return response

@@ -164,6 +164,11 @@ class OpenstackDriver(BaseDriver):
         """Add all IPs"""
         return dict(self.client.servers.ips(instance_id))
 
+    def create_server_volume(self, server_id, volume_id, device=None):
+        return self.client.volumes.create_server_volume(server_id, volume_id, device)
+
+    def delete_server_volume(self, server_id, volume_id):
+        return self.client.volumes.delete_server_volume(server_id, volume_id)
 
 class OpenstackQuota(BaseQuota):
     """docstring for OpenStack Compute Quota"""

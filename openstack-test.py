@@ -115,7 +115,7 @@ class OpenstackTest():
         configs = {}
         configs['size'] = size
         configs['snapshot_id'] = None
-        configs['name'] = 'ubuntu-volume-cal'
+        configs['name'] = ''
         configs['description'] = 'cal-test-vol'
         configs['availability_zone'] = 'nova'
         configs['imageRef'] = '12162d01-2eab-45db-a1c4-831725aa05ee'
@@ -147,47 +147,61 @@ def run():
 
     if args.FLAVOR == 'small':
         print 'small type vm'
-        openstack_test.create_vm_small_flavor()
+        vm = openstack_test.create_vm_small_flavor()
+        f = open('saved_vm_openstack.txt', 'w+')
+        f.write(str(vm.id))  # write to file
     elif args.FLAVOR == 'medium':
         print 'medium type vm'
-        openstack_test.create_vm_medium_flavor()
+        vm = openstack_test.create_vm_medium_flavor()
+        f = open('saved_vm_openstack.txt', 'w+')
+        f.write(str(vm.id))  # write to file
     elif args.FLAVOR == 'large':
         print 'large type vm'
-        openstack_test.create_vm_large_flavor()
+        vm = openstack_test.create_vm_large_flavor()
+        f = open('saved_vm_openstack.txt', 'w+')
+        f.write(str(vm.id))  # write to file
 
     if args.VOLUME == 'true':
         started_time = int(round(time.time() * 1000))
         print 'create volume'
         volume = openstack_test.create_volume(args.SIZE)
 
-        print 'create VM'
-        volume_dict = [{
-            'boot_index': 0,
-            'uuid': volume.id,
-            'device_name': 'vda',
-            'source_type': "volume",
-            'destination_type': "volume",
-            'volume_size': args.SIZE,
-            'delete_on_termination': False
-        }]
+        print 'attach to VM'
+        # volume_dict = [{
+        #     'boot_index': 0,
+        #     'uuid': volume.id,
+        #     'device_name': 'vda',
+        #     'source_type': "volume",
+        #     'destination_type': "volume",
+        #     'volume_size': args.SIZE,
+        #     'delete_on_termination': False
+        # }]
+        f = open("saved_vm_openstack.txt", "rw+")
+        vm_id = f.readline()
         passCreated = False
         while passCreated == False:
             try:
-                vm = openstack_test.create_vm_small_flavor(volume_dict)
-                print vm, type(vm)
+                print openstack_test.openstack_driver.create_server_volume(vm_id, volume.id, '/dev/vdb')
                 passCreated = True
             except:
                 print 'Volume has been not bootable.'
-                time.sleep(3)
+                time.sleep(5)
         ended_time = int(round(time.time() * 1000))
         print 'CREATE VOLUME WITH SIZE ' + args.SIZE + 'GB IN (ms): ', ended_time - started_time
 
-        f = open('saved_vm.txt', 'w+')
-        f.write(str(vm.id)) # write to file
+        # time.sleep(5)
+        # passRemoved = False
+        # while passRemoved == False:
+        #     try:
+        #         openstack_test.openstack_driver.delete_server_volume(vm_id, volume.id)
+        #         passRemoved = True
+        #     except:
+        #         print 'Volume has been not detached.'
+        #         time.sleep(5)
 
     if args.ASSIGN != 'false':
         print 'Associate Floating IP'
-        f = open("saved_vm.txt", "rw+")
+        f = open("saved_vm_openstack.txt", "rw+")
         vm_id = f.readline()
         print vm_id
         public_id = args.ASSIGN

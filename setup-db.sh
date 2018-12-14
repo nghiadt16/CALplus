@@ -11,10 +11,12 @@ then
 
     sudo apt-get update
     sudo apt-get install -y docker-ce=17.03.2~ce-0~ubuntu-xenial
-    sudo usermod -aG docker $(whoami)
+    #sudo usermod -aG docker $(whoami)
 fi
 
-MYSQL_CONTAINER=$(docker ps -a | grep mysql | awk '{print $1}' )
+sleep 3
+
+MYSQL_CONTAINER=$($SUDO_PREFIX docker ps -a | grep mysql | awk '{print $1}' )
 
 if [ ! -z "$MYSQL_CONTAINER" ];
 then
@@ -30,3 +32,9 @@ ended_time=$(date +%s%3N)
 runtime=$((ended_time - started_time))
 
 echo "Running time (ms) =" $runtime
+echo
+echo "============================="
+echo
+echo "Mysql PORT: '3306'"
+echo "Mysql PASSWORD: 'root'"
+echo
