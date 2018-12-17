@@ -221,6 +221,9 @@ def run():
             is_valid = amazon_test.is_valid_pub_ip(ip['public_ip'])
             if is_valid:
                 has_pub_ip = True
+                print ip['public_ip']
+                f = open('saved_ip_amazon.txt', 'w+')
+                f.write(ip['public_ip'])  # write to file
                 amazon_test.associate_public_ip(ip['id'], vm_id)
                 break
 

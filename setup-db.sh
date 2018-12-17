@@ -1,5 +1,8 @@
 echo Installing package
 SUDO_PREFIX="sudo"
+IP=$1
+PORT=3306
+PASS=root
 
 DOCKER_VERSION=$(docker -v)
 if [ -z "$DOCKER_VERSION" ];
@@ -35,6 +38,7 @@ echo "Running time (ms) =" $runtime
 echo
 echo "============================="
 echo
-echo "Mysql PORT: '3306'"
-echo "Mysql PASSWORD: 'root'"
+echo "Mysql PORT: $PORT"
+echo "Mysql PASSWORD: $PASS"
+echo "IP connect: " $IP
 echo

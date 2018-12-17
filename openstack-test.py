@@ -213,6 +213,9 @@ def run():
             }
             ips = openstack_test.neutron_driver.list_public_ip(**search_opts)
             public_id = ips[0]['id']
+            print ips[0]['public_ip']
+            f = open('saved_ip_openstack.txt', 'w+')
+            f.write(ips[0]['public_ip'])  # write to file
         print openstack_test.associate_public_ip(vm_id, public_id)
 
 
